@@ -83,7 +83,7 @@ export default function Porfolio() {
         tags: ["React", "CSS Grid"],
         desc:
           "My personal portfolio with smooth scroll, accessible nav, and a11y‑first components.",
-        link: "#",
+        link: "https://jagadish48.github.io/Portfolio/",
         image: require("./project-img/portfolio.png")
       },
       {
