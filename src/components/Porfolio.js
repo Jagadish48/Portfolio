@@ -182,7 +182,7 @@ export default function Porfolio() {
               <hr/>
               <p className="container text-center mb-4">
                 Hello! I’m <strong>Jagadish Oram</strong>, a passionate software developer with a strong foundation in both front-end and back-end technologies. 
-                I hold a Bachelor’s in Computer Science from KIIT and I complited my Master of Computer Applications at Srusti Academy of Management and Technology. 
+                I hold a Bachelor’s in Computer Science from KIIT and I completed my Master of Computer Applications at Srusti Academy of Management and Technology. 
                 I enjoy building scalable, user-focused applications and continuously sharpening my skills.
               </p>
             </div>
