@@ -3,6 +3,9 @@ import cv from "./cv/Jagadish Oram.pdf";
 import emailjs from "emailjs-com";
 import {ToastContainer,toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 
 // ✅ Drop this component into src/App.jsx (or any route) and it will just work.
 // No external UI libraries required. Fully responsive with plain CSS.
@@ -10,6 +13,23 @@ export default function Porfolio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
+
+  useEffect(() => {
+  AOS.init({
+    duration: 1000, // animation duration
+    easing: "ease-in-out",
+    once: false, 
+     mirror: true,    // whether animation should happen only once
+  });
+
+   window.addEventListener("scroll", AOS.refresh);
+  window.addEventListener("resize", AOS.refresh);
+
+  return () => {
+    window.removeEventListener("scroll", AOS.refresh);
+    window.removeEventListener("resize", AOS.refresh);
+  };
+}, []);
 
 
 
@@ -166,7 +186,7 @@ export default function Porfolio() {
           </div>
           <div className="hero__art" aria-hidden>
             <div className="blob" />
-            <img className="b-5"
+            <img data-aos="zoom-in" className="b-5"
               src={require("./image/jaga.png")}
               alt="profile-Image"
               loading="lazy"
@@ -178,7 +198,7 @@ export default function Porfolio() {
         <section id="about" className="section">
           <div className="container  grid">
             <div>
-              <h2 className="text-center mb-4">About</h2>
+              <h2 data-aos="zoom-out" className="text-center mb-4">About</h2>
               <hr/>
               <p className="container text-center mb-4">
                 Hello! I’m <strong>Jagadish Oram</strong>, a passionate software developer with a strong foundation in both front-end and back-end technologies. 
@@ -189,7 +209,7 @@ export default function Porfolio() {
             <br/>
             <br/>
             <div>
-              <h2 className="text-center mb-4">My Journey</h2>
+              <h2 data-aos="zoom-out"  className="text-center mb-4">My Journey</h2>
               <hr/>
               <p className="container text-center  mb-4">
                 My journey into technology began with a curiosity for problem-solving and grew into a dedicated pursuit of software development.
@@ -206,15 +226,15 @@ export default function Porfolio() {
        
         <section id="skills" className="section alt">
           <div className="container">
-            <h2 className="text-center">Skills</h2>
+            <h2 data-aos="zoom-out" className="text-center">Skills</h2>
             <hr/>
             <div className="skills-grid">
               {skills.map((s) => (
-                <div key={s.name} className="skill-card">
-                  <img src={s.image} alt={s.name} />
+                <div  key={s.name} className="skill-card">
+                  <img data-aos="flip-left"  src={s.image} alt={s.name} />
                   <p>{s.name}</p>
                 </div>
-              ))}
+              ))} 
             </div>
           </div>
         </section>
@@ -223,15 +243,15 @@ export default function Porfolio() {
         {/* ===== Projects ===== */}
         <section id="projects" className="section">
           <div className="container">
-            <h2 className="text-center mb-4">Projects</h2>
+            <h2 data-aos="zoom-out" className="text-center mb-4">Projects</h2>
             <hr/>
             <div className="project-grid">
-              {projects.map((p, i) => (
-                <article key={i} className="project-card">
+              {projects.map((p,i) => (
+                <article data-aos="zoom-in" key={i} className="project-card">
                   <div className="project-media">
                     <img src={p.image} alt="Project preview" loading="lazy" />
                   </div>
-                  <div className="project-body">
+                  <div data-aos="zoom-in" className="project-body">
                     <h3>{p.title}</h3>
                     <p>{p.desc}</p>
                     <div className="tags">
