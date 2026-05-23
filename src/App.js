@@ -1,12 +1,19 @@
 import './App.css';
-import Porfolio from './components/Porfolio';
+import Portfolio from './components/Porfolio';
+import SplashCursor from './components/SplashCursor';
 
 function App() {
   return (
     <>
-    <Porfolio/>
+      <SplashCursor
+        DENSITY_DISSIPATION={3.5}
+        VELOCITY_DISSIPATION={2}
+        SPLAT_RADIUS={0.2}
+        RAINBOW_MODE={true}
+        TRANSPARENT={true}
+      />
+      <Portfolio />
     </>
-   
   );
 }
 

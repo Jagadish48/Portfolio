@@ -1,861 +1,683 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import cv from "./cv/Jagadish Oram.pdf";
 import emailjs from "emailjs-com";
-import {ToastContainer,toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
-import AOS from "aos";
-import "aos/dist/aos.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { motion, AnimatePresence } from "framer-motion";
 
+import BlurText       from "./ui/BlurText";
+import DecryptedText  from "./ui/DecryptedText";
+import SpotlightCard  from "./ui/SpotlightCard";
+import MagneticButton from "./ui/MagneticButton";
+import AnimatedCounter from "./ui/AnimatedCounter";
+import ScrollReveal   from "./ui/ScrollReveal";
+import GlitchText     from "./ui/GlitchText";
 
+const HeroScene = lazy(() => import("./three/HeroScene"));
 
-// ✅ Drop this component into src/App.jsx (or any route) and it will just work.
-// No external UI libraries required. Fully responsive with plain CSS.
-export default function Porfolio() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [showTopBtn, setShowTopBtn] = useState(false);
+/* ─────────────────────────────────────────────────────────────
+   STATIC DATA
+───────────────────────────────────────────────────────────── */
+const NAV  = [
+  { label: "About",    href: "#about"    },
+  { label: "Skills",   href: "#skills"   },
+  { label: "Projects", href: "#projects" },
+  { label: "Contact",  href: "#contact"  },
+];
 
-  useEffect(() => {
-  AOS.init({
-    duration: 1000, // animation duration
-    easing: "ease-in-out",
-    once: false, 
-     mirror: true,    // whether animation should happen only once
-  });
+const SKILLS = [
+  { name: "C",           image: require("./skill_img/C.png"),             color: "#00599C" },
+  { name: "Core Java",   image: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg", color: "#f89820" },
+  { name: "MySQL",       image: require("./skill_img/MySQL.png"),          color: "#4479A1" },
+  { name: "HTML5",       image: require("./skill_img/html.png"),           color: "#E34F26" },
+  { name: "CSS3",        image: require("./skill_img/css.png"),            color: "#1572B6" },
+  { name: "JavaScript",  image: require("./skill_img/javascript.png"),     color: "#F7DF1E" },
+  { name: "React",       image: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg", color: "#61DAFB" },
+  { name: "Git",         image: require("./skill_img/git.png"),            color: "#F05032" },
+];
 
-   window.addEventListener("scroll", AOS.refresh);
-  window.addEventListener("resize", AOS.refresh);
+const PROJECTS = [
+  {
+    title:  "Career Compass",
+    tags:   ["Java", "Spring Boot", "React", "MongoDB"],
+    desc:   "A full-stack career guidance platform with real-time dashboards, smart tracking, and intelligent supplier management.",
+    link:   "https://dsaha8598.github.io/carrier-compass-ui/",
+    image:  require("./project-img/career-path.png"),
+    accent: "#6366f1",
+  },
+  {
+    title:  "Portfolio Website",
+    tags:   ["React", "Three.js", "Tailwind CSS"],
+    desc:   "My personal portfolio with immersive 3D scenes, React Bits animations, and a premium dark-neon design system.",
+    link:   "https://jagadish48.github.io/Portfolio/",
+    image:  require("./project-img/portfolio.png"),
+    accent: "#22d3ee",
+  },
+  {
+    title:  "Coming Soon...",
+    tags:   [],
+    desc:   "The next project is in the works. Stay tuned for something exciting!",
+    link:   "#",
+    image:  require("./project-img/coming soon.jpg"),
+    accent: "#f59e0b",
+  },
+];
 
-  return () => {
-    window.removeEventListener("scroll", AOS.refresh);
-    window.removeEventListener("resize", AOS.refresh);
-  };
-}, []);
+const STATS = [
+  { label: "Projects Built",    value: 3, suffix: "+" },
+  { label: "Months Internship", value: 3, suffix: ""  },
+  { label: "Technologies",      value: 8, suffix: "+" },
+  { label: "Years of Learning", value: 4, suffix: "+" },
+];
 
+const TIMELINE = [
+  {
+    year: "2024",
+    title: "Master of Computer Applications",
+    org: "Srusti Academy of Management & Technology",
+    icon: "fa-solid fa-graduation-cap",
+    color: "#6366f1",
+    desc: "Specialised in software engineering, full-stack development and system design.",
+  },
+  {
+    year: "2023",
+    title: "Java Developer Internship",
+    org: "CTTC, Bhubaneswar",
+    icon: "fa-solid fa-laptop-code",
+    color: "#22d3ee",
+    desc: "Hands-on Core Java & OOP — developed mini-projects and strengthened backend fundamentals.",
+  },
+  {
+    year: "2022",
+    title: "Bachelor of Computer Science",
+    org: "KIIT University",
+    icon: "fa-solid fa-university",
+    color: "#8b5cf6",
+    desc: "Foundation in algorithms, data structures, databases and software design principles.",
+  },
+];
 
+/* ─────────────────────────────────────────────────────────────
+   NAVBAR
+───────────────────────────────────────────────────────────── */
+function Navbar({ darkMode, setDarkMode, scrolled }) {
+  const [open, setOpen] = useState(false);
 
-  const handleSubmit =  (e) => {
-    e.preventDefault();
-
-    emailjs.sendForm("service_baakkan","template_xgizeen",e.target,"rGyTKzwQYP41DYJ2m"
-    ).then(
-        () => {
-          console.log('SUCCESS!');
-          toast.success("Email Send Successfull");
-          e.target.reset();
-        },
-        (error) => {
-          console.log('FAILED...', error.text);
-          toast.error("Failed to send")
-          e.target.reset();
-        },
-      );    
-    };
-    
-  
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowTopBtn(window.scrollY > 300); // show when scrolled 300px
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-
-  useEffect(() => {
-    document.body.setAttribute("data-theme", darkMode ? "light" : "dark");
-  }, [darkMode]);
-
-
-  //Animate the Text
-  const texts = [
-    "Java ",
-    "Full Stack",
-    "Web Developer  "
-  ];
-
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % texts.length); // loop through texts
-    }, 1000); // change every 2.5 seconds
-
-    return () => clearInterval(interval);
-  }, [texts.length]);
-  // Demo data – swap with your own
-  const projects = useMemo(
-    () => [
-      {
-        title: "Career Compass",
-        tags: ["Java","Spring Boot","React", "MongoDB"],
-        desc:
-          "A real‑time dashboard to track stock levels, low‑inventory alerts, and supplier lead times.",
-        link: "https://dsaha8598.github.io/carrier-compass-ui/",
-        image: require("./project-img/career-path.png")
-      },
-      {
-        title: "Portfolio Website",
-        tags: ["React", "CSS Grid"],
-        desc:
-          "My personal portfolio with smooth scroll, accessible nav, and a11y‑first components.",
-        link: "https://jagadish48.github.io/Portfolio/",
-        image: require("./project-img/portfolio.png")
-      },
-      {
-        title: "Coming Soon...",
-        tags: [],
-        desc:
-          ".......                   ",
-        link: "#",
-        image:
-          require("./project-img/coming soon.jpg")
-      }
-    ],
-    []
-  );
-  const skills = useMemo(
-        () => [
-        { name: "C", image: require("./skill_img/C.png") },
-        { name: "Core Java", image: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" },
-        { name: "MySQL", image: require("./skill_img/MySQL.png")},
-        { name: "HTML", image: require("./skill_img/html.png") },
-        { name: "CSS", image: require("./skill_img/css.png") },
-        { name: "JavaScript", image: require("./skill_img/javascript.png") },
-        { name: "Git", image: require("./skill_img/git.png") }
-        ],
-        []
-        );
-      
   return (
-    <>
-      <div className="app-root">
-        <style>{baseStyles}</style>
+    <motion.nav
+      className={`navbar${scrolled ? " scrolled" : ""}`}
+      initial={{ y: -70, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.55, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+      <div className="navbar-inner">
+        {/* Brand */}
+        <a href="#hero" className="brand" onClick={() => setOpen(false)}>
+          <div className="brand-dot">J</div>
+          <span className="brand-name">Jagadish<span>.</span></span>
+        </a>
 
-        {/* ===== Header / Nav ===== */}
-        <header className="site-header" id="home">
-          <a className="brand" href="#hero-hero" onClick={() => setMenuOpen(false)}>
-            <img className="logo-img" src={require("./image/logo1.png")} alt="logo"/>
-          </a>
-          <button
-            className={"hamburger" + (menuOpen ? " is-active" : "")}
-            aria-label="Toggle navigation"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <nav className={"nav" + (menuOpen ? " open" : "")}
-            onClick={() => setMenuOpen(false)}>
-            <a href="#about">About</a>
-            <a href="#skills">Skills</a>
-            <a href="#projects">Projects</a>
-            <a href="#contact">Contact</a>
-            <a className="btn primary" href={cv} target="_blank" rel="noreferrer">
-              Download CV
+        {/* Desktop links */}
+        <ul className="nav-links">
+          {NAV.map(n => (
+            <li key={n.href}>
+              <a href={n.href} className="nav-link">{n.label}</a>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop actions */}
+        <div className="nav-actions">
+          <MagneticButton magnetStrength={0.3}>
+            <a href={cv} target="_blank" rel="noreferrer" className="btn-pri" style={{ padding: "9px 20px", fontSize: 13 }}>
+              <i className="fa-solid fa-download" style={{ fontSize: 11 }} />
+              Resume
             </a>
-            <button className="btn ghost small text-center" type="button" onClick={() => setDarkMode((d) => !d)}>
-              {darkMode ? (<><i className="fa-solid fa-moon"></i> Dark</>) : (<><i className="fa-solid fa-lightbulb"></i> Light</>)}
-            </button>
-          </nav>
-        </header>
-        {/* ===== Hero ===== */}
-        <section id="hero-hero" className="hero">
-          <div className="hero__content">
-            <p className="eyebrow">Hello, I'm</p>
-            <h1>
-              Jagadish Oram
-             
-            </h1>
-             <p className="sub animated-text">{texts[index]}</p>
-              <div className="aspiring">
-              <h6 >An Aspiring SOFTWARE ENGINEER</h6>
-            </div>
-            <div className="cta-row">
-              <a href="#projects" className="btn ghost">View Work</a>
-              <a href="#contact" className="btn ghost">Let's Talk</a>
-            </div>
-           
-           
-          </div>
-          <div className="hero__art" aria-hidden>
-            <div className="blob" />
-            <img data-aos="zoom-in" className="b-5"
-              src={require("./image/jaga.png")}
-              alt="profile-Image"
-              loading="lazy"
-            />
-          </div>
-        </section>
+          </MagneticButton>
+          <button className="icon-btn" onClick={() => setDarkMode(d => !d)} title="Toggle theme">
+            <i className={`fa-solid fa-${darkMode ? "sun" : "moon"}`} />
+          </button>
+        </div>
 
-        {/* ===== About ===== */}
-        <section id="about" className="section">
-          <div className="container  grid">
-            <div>
-              <h2 data-aos="zoom-out" className="text-center mb-4">About</h2>
-              <hr/>
-              <p className="container text-center mb-4">
-                Hello! I’m <strong>Jagadish Oram</strong>, a passionate software developer with a strong foundation in both front-end and back-end technologies. 
-                I hold a Bachelor’s in Computer Science from KIIT and I completed my Master of Computer Applications at Srusti Academy of Management and Technology. 
-                I enjoy building scalable, user-focused applications and continuously sharpening my skills.
-              </p>
-            </div>
-            <br/>
-            <br/>
-            <div>
-              <h2 data-aos="zoom-out"  className="text-center mb-4">My Journey</h2>
-              <hr/>
-              <p className="container text-center  mb-4">
-                My journey into technology began with a curiosity for problem-solving and grew into a dedicated pursuit of software development.
-                From creating projects like a Result Management System to developing Career Compass, a career guidance platform, I have explored both web and full-stack development.
-                My internship at CTTC, Bhubaneswar gave me hands-on experience in Core Java and strengthened my understanding of object-oriented programming.<br/>
-                
-                I believe in continuous learning and aspire to contribute to innovative solutions that bridge the gap between ideas and real-world impact.
-              </p>
-            </div>
-          </div>
-        </section>
+        {/* Hamburger */}
+        <button className={`hamburger${open ? " open" : ""}`} onClick={() => setOpen(v => !v)} aria-label="Menu">
+          <span /><span /><span />
+        </button>
+      </div>
 
-        {/* ===== Skills ===== */}
-       
-        <section id="skills" className="section alt">
-          <div className="container">
-            <h2 data-aos="zoom-out" className="text-center">Skills</h2>
-            <hr/>
-            <div className="skills-grid">
-              {skills.map((s) => (
-                <div  key={s.name} className="skill-card">
-                  <img data-aos="flip-left"  src={s.image} alt={s.name} />
-                  <p>{s.name}</p>
+      {/* Mobile dropdown */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="mobile-menu"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {NAV.map(n => (
+              <a key={n.href} href={n.href} onClick={() => setOpen(false)}>{n.label}</a>
+            ))}
+            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+              <a href={cv} target="_blank" rel="noreferrer" className="btn-pri" style={{ flex: 1, justifyContent: "center", fontSize: 13 }}>
+                <i className="fa-solid fa-download" /> Resume
+              </a>
+              <button className="icon-btn" onClick={() => setDarkMode(d => !d)}>
+                <i className={`fa-solid fa-${darkMode ? "sun" : "moon"}`} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────────────────────── */
+const ROLES = ["Full Stack Developer", "Java Engineer", "Web Developer", "Software Engineer"];
+
+function HeroSection() {
+  const [roleIdx, setRoleIdx] = useState(0);
+  const rolesLen = ROLES.length;
+
+  useEffect(() => {
+    const t = setInterval(() => setRoleIdx(i => (i + 1) % rolesLen), 3000);
+    return () => clearInterval(t);
+  }, [rolesLen]);
+
+  return (
+    <section id="hero" className="hero-section">
+      {/* Background 3D Canvas */}
+      <div className="hero-canvas-bg">
+        <Suspense fallback={null}>
+          <HeroScene />
+        </Suspense>
+      </div>
+
+      {/* Ambient blobs */}
+      <div className="blob blob-1" />
+      <div className="blob blob-2" />
+      <div className="blob blob-3" />
+
+      <div className="wrap">
+        <div className="hero-grid">
+          {/* ── Content ── */}
+          <div className="hero-content">
+            {/* Eyebrow */}
+            <motion.div
+              className="hero-tag"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="hero-tag-line" />
+              <span className="hero-tag-text">
+                <GlitchText speed="slow" enableOnHover>Hello, I'm</GlitchText>
+              </span>
+            </motion.div>
+
+            {/* Name */}
+            <motion.h1
+              className="hero-name"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, delay: 0.32 }}
+            >
+              <DecryptedText
+                text="Jagadish Oram"
+                speed={38}
+                maxIterations={10}
+                animateOn="view"
+                characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+              />
+            </motion.h1>
+
+            {/* Animated role */}
+            <motion.div
+              className="hero-role-wrap"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <div className="hero-role-dot" />
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={roleIdx}
+                  className="hero-role"
+                  initial={{ y: 18, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -18, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {ROLES[roleIdx]}
+                </motion.span>
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Bio */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.65 }}
+            >
+              <p className="hero-bio">
+                <BlurText
+                  text="An aspiring Software Engineer passionate about building scalable, user-focused applications. MCA graduate with hands-on experience in Java, React & Spring Boot."
+                  delay={25}
+                  animateBy="words"
+                />
+              </p>
+            </motion.div>
+
+            {/* CTAs */}
+            <motion.div
+              className="hero-cta"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              <MagneticButton magnetStrength={0.3}>
+                <a href="#projects" className="btn-pri">
+                  View My Work <i className="fa-solid fa-arrow-right" style={{ fontSize: 12 }} />
+                </a>
+              </MagneticButton>
+              <MagneticButton magnetStrength={0.3}>
+                <a href="#contact" className="btn-ghost">
+                  Let's Talk <i className="fa-solid fa-message" style={{ fontSize: 12 }} />
+                </a>
+              </MagneticButton>
+            </motion.div>
+
+            {/* Socials */}
+            <motion.div
+              className="hero-socials"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.95 }}
+            >
+              <a href="https://github.com/Jagadish48"  target="_blank" rel="noreferrer" className="social-link" aria-label="GitHub">
+                <i className="fa-brands fa-github" />
+              </a>
+              <a href="https://www.linkedin.com/in/jagadish-oram-568607299" target="_blank" rel="noreferrer" className="social-link" aria-label="LinkedIn">
+                <i className="fa-brands fa-linkedin-in" />
+              </a>
+              <span style={{ fontSize: 12, color: "var(--c-faint)", fontFamily: "JetBrains Mono, monospace" }}>
+                @Jagadish48
+              </span>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="scroll-ind">
+        <span className="scroll-ind-text">Scroll</span>
+        <div className="scroll-ind-bar" />
+      </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ABOUT
+───────────────────────────────────────────────────────────── */
+function AboutSection() {
+  return (
+    <section id="about" className="sec sec-alt">
+      <div className="wrap">
+        {/* Header */}
+        <ScrollReveal animation="fadeUp" className="text-center" style={{ textAlign: "center", marginBottom: 60 }}>
+          <span className="sec-label">01. About Me</span>
+          <h2 className="sec-title">Who Am I?</h2>
+          <div className="sec-rule" style={{ margin: "14px auto 0" }} />
+        </ScrollReveal>
+
+        <div className="about-grid">
+          {/* Left – bio & stats */}
+          <ScrollReveal animation="fadeLeft">
+            <p className="about-bio">
+              Hello! I'm <strong>Jagadish Oram</strong>, a passionate software developer with a strong
+              foundation in both front-end and back-end technologies. I enjoy building scalable,
+              user-focused applications and continuously sharpening my skills.
+            </p>
+            <p className="about-bio">
+              My journey began with curiosity for problem-solving and grew into a dedicated pursuit of
+              software development — from a <strong>Result Management System</strong> to{" "}
+              <strong>Career Compass</strong>, a full-stack career guidance platform. My internship at
+              CTTC, Bhubaneswar gave me hands-on experience in Core Java and OOP.
+            </p>
+
+            {/* Open to work badge */}
+            <div className="avail-badge">
+              <div className="avail-dot" />
+              <span className="avail-text">Open to Opportunities</span>
+            </div>
+
+            {/* Stats */}
+            <div className="stats-grid">
+              {STATS.map((s, i) => (
+                <div key={i} className="stat-card">
+                  <div className="stat-num">
+                    <AnimatedCounter to={s.value} suffix={s.suffix} duration={2} />
+                  </div>
+                  <div className="stat-label">{s.label}</div>
                 </div>
-              ))} 
+              ))}
             </div>
-          </div>
-        </section>
+          </ScrollReveal>
 
+          {/* Right – timeline */}
+          <ScrollReveal animation="fadeRight" delay={0.15}>
+            <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 18, color: "var(--c-text)", marginBottom: 20 }}>
+              My Journey
+            </h3>
+            <div className="timeline">
+              {TIMELINE.map((item, i) => (
+                <motion.div
+                  key={i}
+                  className="tl-item"
+                  whileHover={{ borderColor: `${item.color}50`, x: 4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="tl-icon" style={{ background: `${item.color}18` }}>
+                    <i className={item.icon} style={{ color: item.color, fontSize: 15 }} />
+                  </div>
+                  <div className="tl-body">
+                    <div className="tl-title">{item.title}</div>
+                    <div className="tl-org" style={{ color: item.color }}>{item.org}</div>
+                    <div className="tl-desc">{item.desc}</div>
+                  </div>
+                  <div className="tl-year" style={{ background: `${item.color}18`, color: item.color }}>
+                    {item.year}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </section>
+  );
+}
 
-        {/* ===== Projects ===== */}
-        <section id="projects" className="section">
-          <div className="container">
-            <h2 data-aos="zoom-out" className="text-center mb-4">Projects</h2>
-            <hr/>
-            <div className="project-grid">
-              {projects.map((p,i) => (
-                <article data-aos="zoom-in" key={i} className="project-card">
-                  <div className="project-media">
-                    <img src={p.image} alt="Project preview" loading="lazy" />
+/* ─────────────────────────────────────────────────────────────
+   SKILLS
+───────────────────────────────────────────────────────────── */
+function SkillsSection() {
+  return (
+    <section id="skills" className="sec">
+      {/* subtle glow */}
+      <div className="blob" style={{ width: 500, height: 500, top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "rgba(139,92,246,0.08)" }} />
+
+      <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
+        <ScrollReveal animation="fadeUp" style={{ textAlign: "center", marginBottom: 52 }}>
+          <span className="sec-label">02. Skills</span>
+          <h2 className="sec-title">Tech Stack</h2>
+          <div className="sec-rule" style={{ margin: "14px auto 0" }} />
+          <p style={{ marginTop: 14, fontSize: 14, color: "var(--c-muted)", maxWidth: 400, margin: "14px auto 0" }}>
+            Technologies I work with to bring ideas to life.
+          </p>
+        </ScrollReveal>
+
+        <div className="skills-grid">
+          {SKILLS.map((skill, i) => (
+            <ScrollReveal key={skill.name} animation="scaleIn" delay={i * 0.06}>
+              <SpotlightCard
+                spotlightColor={`${skill.color}22`}
+                glowColor={`${skill.color}44`}
+                borderColor="rgba(255,255,255,0.07)"
+              >
+                <div className="skill-card" style={{ border: "none", background: "transparent" }}>
+                  <div className="skill-icon-wrap" style={{ background: `${skill.color}18` }}>
+                    <motion.img
+                      src={skill.image}
+                      alt={skill.name}
+                      whileHover={{ rotate: [0, -8, 8, 0], scale: 1.12 }}
+                      transition={{ duration: 0.45 }}
+                    />
                   </div>
-                  <div data-aos="zoom-in" className="project-body">
-                    <h3>{p.title}</h3>
-                    <p>{p.desc}</p>
-                    <div className="tags">
-                      {p.tags.map((t) => (
-                        <span className="tag" key={t}>{t}</span>
-                      ))}
-                    </div>
-                    <div className="actions">
-                      <a className="btn small ghost" href={p.link}> Live</a>
-                    </div>
-                  </div>
-                </article>
+                  <span className="skill-name">{skill.name}</span>
+                  <div className="skill-line" style={{ background: skill.color }} />
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* Also working with */}
+        <ScrollReveal animation="fadeUp" delay={0.3}>
+          <div className="also-know">
+            <p className="also-know-label">Also working with</p>
+            <div className="tech-chips">
+              {["Spring Boot", "MongoDB", "REST APIs", "OOP", "Data Structures", "Linux", "Postman"].map(t => (
+                <span key={t} className="tech-chip">{t}</span>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* ===== Contact ===== */}
-      <section id="contact" className="section alt">
-      <div className="container">
-        <h2 className="text-center mb-4">Contact Me</h2>
-        <hr />
-        <p className="text-center">
-          Have a question or want to work together? Send a message:
-        </p>
-        <form className="contact-form" onSubmit={handleSubmit}>
-          <div className="form-row ">
-            <label>
-              Name
-              <input
-                required
-                name="name"
-                // value={formData.name}
-                // onChange={handleInputChange}
-                placeholder="Your name"
-              />
-            </label>
-            <label>
-              Email
-              <input
-                required
-                type="email"
-                name="email"
-                // value={formData.email}
-                // onChange={handleInputChange}
-                placeholder="Your Email"
-              />
-            </label>
-          </div>
-          <label>
-            Message
-            <textarea
-              required
-              name="message"
-              rows={5}
-              // value={formData.message}
-              // onChange={handleInputChange}
-              placeholder="Write message here..."
-            />
-          </label>
-          <button
-            className="btn btn-outline-primary small center-btn"
-            type="submit"
-          >
-            Send
-          </button>
-        </form>
+        </ScrollReveal>
       </div>
     </section>
+  );
+}
 
-        {/* ===== Footer ===== */}
-        <footer className="site-footer">
-          <h6 className="text-center ">Thanks For Visiting</h6>
-          <div className="container">
-            <p className="text-center">© {new Date().getFullYear()} Jagadish Oram. All rights reserved.</p>
-             <div className="socials">
+/* ─────────────────────────────────────────────────────────────
+   PROJECTS
+───────────────────────────────────────────────────────────── */
+function ProjectsSection() {
+  return (
+    <section id="projects" className="sec sec-alt">
+      <div className="blob" style={{ width: 400, height: 400, bottom: 0, left: 0, background: "rgba(99,102,241,0.09)" }} />
 
-              <a href="https://github.com/Jagadish48"><i className="fa-brands fa-github"></i></a>
-              <a href="https://www.linkedin.com/in/jagadish-oram-568607299"><i className="fa-brands fa-linkedin-in"></i></a>
-              <a href="https://github.com/Jagadish48"><i className="fa-brands fa-x-twitter"></i></a>
-            </div>
-          </div>
-        </footer>
+      <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
+        <ScrollReveal animation="fadeUp" style={{ textAlign: "center", marginBottom: 52 }}>
+          <span className="sec-label">03. Projects</span>
+          <h2 className="sec-title">Featured Work</h2>
+          <div className="sec-rule" style={{ margin: "14px auto 0" }} />
+        </ScrollReveal>
+
+        <div className="projects-grid">
+          {PROJECTS.map((p, i) => (
+            <ScrollReveal key={i} animation="fadeUp" delay={i * 0.1}>
+              <SpotlightCard
+                spotlightColor={`${p.accent}18`}
+                glowColor={`${p.accent}38`}
+                borderColor="rgba(255,255,255,0.07)"
+              >
+                <div className="project-card" style={{ border: "none", background: "transparent", borderRadius: 20, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                  {/* Image */}
+                  <div className="project-img">
+                    <img src={p.image} alt={p.title} />
+                    <div className="project-img-overlay" />
+                    <div className="project-accent-line" style={{ background: p.accent, boxShadow: `0 0 14px ${p.accent}` }} />
+                  </div>
+
+                  {/* Body */}
+                  <div className="project-body">
+                    <h3 className="project-title">{p.title}</h3>
+                    <p className="project-desc">{p.desc}</p>
+                    {p.tags.length > 0 && (
+                      <div className="project-tags">
+                        {p.tags.map(t => (
+                          <span key={t} className="project-tag" style={{ borderColor: `${p.accent}30`, color: p.accent, background: `${p.accent}12` }}>{t}</span>
+                        ))}
+                      </div>
+                    )}
+                    <a href={p.link} target="_blank" rel="noreferrer" className="project-link" style={{ color: p.accent }}>
+                      View Live <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: 11 }} />
+                    </a>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </ScrollReveal>
+          ))}
+        </div>
       </div>
-      {showTopBtn && (
-        <button className="scroll-to-top bg-blue" onClick={scrollToTop}>
-          ↑
-        </button>
-      )}
+    </section>
+  );
+}
 
-       <ToastContainer
+/* ─────────────────────────────────────────────────────────────
+   CONTACT
+───────────────────────────────────────────────────────────── */
+function ContactSection() {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    emailjs.sendForm("service_baakkan", "template_xgizeen", e.target, "rGyTKzwQYP41DYJ2m")
+      .then(() => { toast.success("Message sent! 🚀"); e.target.reset(); })
+      .catch(() => toast.error("Failed to send. Try again."));
+  };
+
+  return (
+    <section id="contact" className="sec">
+      <div className="blob" style={{ width: 400, height: 400, top: 0, right: 0, background: "rgba(34,211,238,0.07)" }} />
+      <div className="blob" style={{ width: 350, height: 350, bottom: 0, left: 0, background: "rgba(139,92,246,0.08)" }} />
+
+      <div className="wrap" style={{ position: "relative", zIndex: 1 }}>
+        <ScrollReveal animation="fadeUp" style={{ textAlign: "center", marginBottom: 52 }}>
+          <span className="sec-label">04. Contact</span>
+          <h2 className="sec-title">Let's Work Together</h2>
+          <div className="sec-rule" style={{ margin: "14px auto 0" }} />
+        </ScrollReveal>
+
+        <div className="contact-layout">
+          {/* Left – info */}
+          <ScrollReveal animation="fadeLeft">
+            <h3 className="contact-info-title">Get In Touch</h3>
+            <p className="contact-info-sub">
+              Have a project in mind, a question, or just want to say hello?
+              My inbox is always open — I'll respond as soon as I can.
+            </p>
+
+            {[
+              { icon: "fa-solid fa-envelope", label: "Email", value: "jagadishoram48@gmail.com", color: "#6366f1" },
+              { icon: "fa-brands fa-github",  label: "GitHub", value: "github.com/Jagadish48",   color: "#8b5cf6" },
+              { icon: "fa-brands fa-linkedin-in", label: "LinkedIn", value: "jagadish-oram-568607299", color: "#22d3ee" },
+            ].map((item, i) => (
+              <div key={i} className="contact-item">
+                <div className="contact-icon" style={{ background: `${item.color}18` }}>
+                  <i className={item.icon} style={{ color: item.color, fontSize: 15 }} />
+                </div>
+                <div>
+                  <div className="contact-item-label">{item.label}</div>
+                  <div className="contact-item-value">{item.value}</div>
+                </div>
+              </div>
+            ))}
+          </ScrollReveal>
+
+          {/* Right – form */}
+          <ScrollReveal animation="fadeRight" delay={0.15}>
+            <div className="contact-form-wrap">
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div className="form-row">
+                  <label>
+                    <span className="field-label">Your Name</span>
+                    <input required name="name" placeholder="Jagadish Oram" className="form-input" />
+                  </label>
+                  <label>
+                    <span className="field-label">Email Address</span>
+                    <input required type="email" name="email" placeholder="you@example.com" className="form-input" />
+                  </label>
+                </div>
+                <label>
+                  <span className="field-label">Message</span>
+                  <textarea required name="message" rows={5} placeholder="Tell me about your project..." className="form-input" />
+                </label>
+                <MagneticButton magnetStrength={0.2}>
+                  <motion.button type="submit" className="btn-pri" style={{ width: "100%", justifyContent: "center" }} whileTap={{ scale: 0.97 }}>
+                    <i className="fa-solid fa-paper-plane" style={{ fontSize: 13 }} />
+                    Send Message
+                  </motion.button>
+                </MagneticButton>
+              </form>
+            </div>
+          </ScrollReveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────────────────────── */
+function Footer() {
+  return (
+    <footer className="footer">
+      <p className="footer-copy">
+        © {new Date().getFullYear()} <span>Jagadish Oram</span>. All rights reserved.
+      </p>
+      <p className="footer-built">Built with React · Three.js · Tailwind CSS · React Bits ✨</p>
+    </footer>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLL TO TOP
+───────────────────────────────────────────────────────────── */
+function ScrollToTop({ show }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.button
+          className="scroll-top"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          title="Back to top"
+        >
+          <i className="fa-solid fa-chevron-up" />
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ROOT
+───────────────────────────────────────────────────────────── */
+export default function Portfolio() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [showTop,  setShowTop]  = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", darkMode ? "light" : "dark");
+  }, [darkMode]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 40);
+      setShowTop(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <>
+      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} scrolled={scrolled} />
+      <main>
+        <HeroSection />
+        <AboutSection />
+        <SkillsSection />
+        <ProjectsSection />
+        <ContactSection />
+      </main>
+      <Footer />
+      <ScrollToTop show={showTop} />
+      <ToastContainer
         position="top-center"
         autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        // closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={darkMode ? "dark" : "light"}
+        theme={darkMode ? "light" : "dark"}
       />
-     
     </>
   );
-
 }
-// const resumeUrl = "https://filesamples.com/samples/document/pdf/sample3.pdf"; // Replace with your CV link
-
-const baseStyles = `
-/* ===== CSS Reset (trimmed) ===== */
-* { box-sizing: border-box; overflow: hiden;}
-html { scroll-behavior: smooth; }
-body { margin: 0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #0b1021; background: #ffffff; }
-img { max-width: 100%; display: block; }
-a { color: inherit; text-decoration: none; }
-
-.app-root{
- overflow: hiden;
-}
-.logo-img{
-max-width: 40px
-/*filter: drop-shadow(0 0 6px var(--primary)) saturate(1.5);*/
-}
-.blob img{
-size:50px}
-/*==== fade animation ====*/
-
- . animated-text {
-  margin-left: 20px;
-  font-size: 50%;
-  font-weight: 500;
-  color: var(text);
-  animation: fadeIn 0.8s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ==== Hero Section ==== */
-
-
-
-/* ✅ Add overlay so text is readable */
-..hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45); /* dark overlay */
-  z-index: -1;
-}
-
-
-/*==== Hero Section ====*/
-.socials {
-  display: flex;
-  gap: 20px;          /* spacing between icons */
-  margin-top: 20px;   /* space above socials */
-  justify-content: left; /* center them */
-  margin-left: 50px;
-}
-.socials a .fa-brands {
-  transition: transform 0.3s ease, color 0.3s ease; /* smooth icon animation */
-}
-.socials a {
-  color: var(--text);        /* default text color */
-  font-size: 100%;           /* size of icons */
-  transition: color 0.3s, transform 0.3s;
-}
-
-.socials a:hover {
-  color: var(--accent);      /* change color on hover */
-  transform: scale(1.2);     /* small zoom effect */
-}
-
-.aspiring{
-margin-top:40px;
-color: #dca735;
-}
-/* ===== Design tokens ===== */
-:root {
-  --bg: #ffffff;
-  --text: #0b1021;
-  --muted: #5b6476;
-  --primary: #5b7fff;
-  --primary-600: #4a6af2;
-  --surface: #f4f6fb;
-  --border: #ddd;
-  --ring: #c7d2fe;
-  --nav-bg: white;  /* light gray */
-
-}
-
-/* ===== Dark Theme ===== */
-
-body[data-them="dark"] .hero{
-background: #fff
-}
-body[data-theme="dark"] .hamburger {
-  background: #1a2238;       /* dark surface */
-  border-color: var(--border);
-}
-
-body[data-theme="dark"] .hamburger span {
-  background: #f5f7fa;       /* white lines */
-}
-
-body[data-theme="dark"] .btn.ghost {
-  background: #1a2238;       /* dark background */
-  color: #f5f7fa;            /* light text */
-  border-color: var(--border);
-}
-
-body[data-theme="dark"] .btn.ghost:hover {
-  background: #2c3654;       /* brighter hover */
-}
-body[data-theme="dark"]  {
-  --bg: #0b1021;
-  --text: #f5f7fa;
-  --muted: #a0abc0;
-  --primary: #274653;
-  --primary-600: #4a6af2;
-  --surface: #1a2238;
-  --border: #2c3654;
-  --ring: #3c4aa1;
-
-  background: var(--bg);
-  color: var(--text);
-}
-
-body[data-theme="dark"] .nav a:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-body[data-theme="dark"] .project-card,
-body[data-theme="dark"] .chip,
-body[data-theme="dark"] input,
-body[data-theme="dark"] textarea {
-  background: #111729;
-  color: var(--text);
-  border-color: var(--border);
-}
-
-body[data-theme="dark"] .btn.ghost {
-  color: var(--text);
-}
-
-body[data-theme="dark"] .site-header {
-  background: rgba(11, 16, 33, 0.8);
-  border-color: var(--border);
-}
-
-body[data-theme="dark"] .site-footer {
-  border-color: var(--border);
-}
-
-label {
-  display: grid;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);  
-}
-  body[data-theme="dark"] label {
-  color: #f5f7fa;
-}
-body[data-theme="dark"] {
-  --nav-bg: #15202dff;  /* dark background */
-  --border: #333;
-}
-
-
-
-/* ===== Layout ===== */
-.container { width: min(1100px, 92vw); margin: 0 auto; }
-.section { padding: 80px 0; }
-.section.alt { background: var(--surface); }
-.grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 36px; align-items: center; }
-
-/* ===== Header ===== */
-.site-header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 14px 4vw; }
-.brand { font-weight: 800; letter-spacing: 0.2px; display: flex; align-items: center; gap: 10px; }
-.brand .dot { width: 10px; height: 10px; border-radius: 999px; background: var(--primary); display: inline-block; }
-
-.nav { display: flex; align-items: center; gap: 18px; }
-.nav a { padding: 8px 10px; border-radius: 10px; font-weight: 500; color: var(--muted); }
-.nav a:hover { color: var(--text); background: #f3f4f6; }
-
-.hamburger { display: none; width: 40px; height: 40px; border: 1px solid var(--border); background: #fff; border-radius: 12px; align-items: center; justify-content: center; gap: 4px; flex-direction: column; }
-.hamburger span { display: block; width: 18px; height: 2px; background: #111; transition: 200ms ease; }
-.hamburger.is-active span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.hamburger.is-active span:nth-child(2) { opacity: 0; }
-.hamburger.is-active span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
-
-/* ===== Hero ===== */
-.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 42px; align-items: center; width: min(1100px, 92vw); margin: 40px auto 0; padding: 40px 0 10px; }
-.hero__content h1 { font-size: clamp(36px, 4.6vw, 58px); line-height: 1.05; }
-.eyebrow { color: var(text); text-transform: uppercase; letter-spacing: 1.6px; font-size: 12px; color: blue; }
-.sub { color: var(text); font-size: clamp(15px, 2.4vw, 18px); color: blue; }
-.cta-row { display: flex; gap: 12px; margin: 22px 0; }
-.socials { margin-top: 6px; display: flex; gap: 10px; font-size: 20px; }
-.hero__art { position: relative; }
-.blob { position: absolute; inset: 10% -10% -10% -10%; background: radial-gradient(600px 300px at 70% 40%, var(--ring), transparent 60%); filter: blur(24px); }
-.hero__art img { border-radius: 24px; position: relative;   }
-
-/* ===== Content ===== */
-h2 { font-size: clamp(24px, 3.2vw, 34px); margin: 0 0 16px; }
-.bullets { padding-left: 18px; color: var(--muted); }
-.bullets li { margin: 8px 0; }
-
-.about-card img { border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-
-.chips { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip { border: 1px solid var(--border); padding: 8px 12px; border-radius: 999px; background: #fff; }
-
-.project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.project-card { border: 1px solid var(--border); border-radius: 18px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
-.project-media { aspect-ratio: 16/9; overflow: hidden; }
-.project-media img { width: 100%; height: 100%;  object-fit: cover; transition: transform .35s ease; }
-.project-card:hover .project-media img { transform: scale(1.06); }
-.project-body { padding: 14px 14px 18px; display: grid; gap: 6px; }
-.tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 8px; font-size: 12px; color: var(--muted); }
-.actions { display: flex; gap: 8px; margin-top: 6px; }
-
-.contact-form { display: grid; gap: 12px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; color: #111; }
-input, textarea { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font: inherit; background: #fff; }
-input:focus, textarea:focus { outline: 3px solid var(--ring); border-color: var(--primary); }
-
-.btn { border: 1px solid var(--border); padding: 10px 14px; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.btn.small { padding: 8px 10px; font-size: 14px; text-align: center; }
-.btn.primary { background: var(--primary); color: #fff; border-color: var(--primary-600); box-shadow: 0 6px 14px rgba(91,127,255,.25); }
-.btn.primary:hover { filter: brightness(0.98); }
-.btn.ghost { background: transparent;  }
-.btn.ghost:hover { filter: brightness(0.98); }
-
-/* ==== Skills Section ==== */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* always 2 columns */
-  gap: 30px;
-  justify-items: center;
-  margin-top: 30px;
-}
-
-.skill-card {
- display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-
-  /* Glassmorphism effect */
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 20px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* take equal space in grid */
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-}
-.skill-card:hover{
-  justify-items: center;
-  gap: 10px;
-  font-family: Lato, sans-serif;
-  /*list-style-type: square;*/
-    transform: translateY(-6px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  }
-
-.skill-card img {
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-  border-radius: 110%;
-  
-}
-
-.skill-card p {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--text);
-}
-
-
-/*==== contactc ====*/
-.contact-form {
-  width: 100%;        /* make form full width */
-  max-width: 700px;   /* optional: limit width for better readability */
-  margin: 0 auto;     /* center the form in section */
-}
-
-.contact-form input,
-.contact-form textarea {
-  width: 100%;        /* inputs/textarea take full form width */
-}
-
-/* ===== Footer ===== */
-.site-footer { border-top: 1px solid var(--border); padding: 28px 0 42px; color: var(--muted); }
-.site-footer .container { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.foot-links { display: flex; gap: 12px; }
-
-/*===Button section === */
-.center-btn {
-  display: block;
-  margin: 20px auto 0; /* center horizontally */
-}
-.btn.small { 
-  padding: 8px 10px; 
-  font-size: 14px; 
-  justify-content: left;
-  
-}
-
-/*==== TopScroll Tab ====*/
-.scroll-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  border: none;
-  background: var(--primary);
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: background 0.2s ease;
-  z-index: 1000;
-}
-.scroll-to-top:hover {
-  background: var(--primary-600);
-}
-  /* ==== Dark theme for Scroll-to-top button ==== */
-
-  body.dark {
-  --nav-bg: #15202dff;  /* your dark color */
-  --border: #333;
-}
-
-
-body[data-theme="dark"] .scroll-to-top {
-  background: #01024dff;   /* darker background */
-  color: #f5f7fa;        /* light text/icon */
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-}
-
-body[data-theme="dark"] .scroll-to-top:hover {
-  background: #2c3654;   /* slightly lighter on hover */
-}
-
-/* ===== Responsive Breakpoints ===== */
-
-/* Tablets (≤ 1024px) */
-@media (max-width: 1024px) {
-  .hero {
-    grid-template-columns: 1fr 1fr; /* ✅ Keep side by side */
-    align-items: center;            /* ✅ Align vertically */
-    gap: 20px;
-  }
-  .hero__art {
-    margin-top: 0;                 
-    max-width: 300px;              
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: auto;
-  }
-  .project-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .skills-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .site-footer .container {
-    flex-direction: column;
-    text-align: center;
-    gap: 15px;
-  }
-}
-
-/* Mobile (≤ 768px) */
-@media (max-width: 768px) {
-  .site-header {
-    padding: 10px 16px;
-  }
-  .nav {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    flex-direction: column;
-    background: var(--nav-bg);
-    padding: 20px;
-    border-radius: 0 0 12px 12px;
-    display: none;
-  }
-  .nav.open {
-    display: flex;
-  }
-  .hamburger {
-    display: flex;
-
-  }
-
-  .hero {
-    grid-template-columns: 1fr 1fr; /* ✅ Keep hero + hero__art side by side */
-    align-items: center;            /* ✅ Align items properly */
-    gap: 10px;
-  }
-  .hero__art {
-    margin-top: 0;                  /* ✅ No extra spacing */
-    max-width: 200px;               /* ✅ Smaller image for mobile */
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: auto;
-  }
-
-  .project-grid {
-    grid-template-columns: 1fr;
-  }
-  .skills-grid {
-     grid-template-columns: repeat(2, 1fr); /* ✅ 2 columns on mobile */
-  }
-  .hero__content h1 {
-    font-size: 28px;
-  }
-  .sub {
-    font-size: 16px;
-  }
-  .cta-row {
-    gap: 10px;
-    flex-direction: row; /* ✅ Keep buttons side by side */
-  }
-    .cta-row a {
-  flex: 1 1 auto;               /* ✅ buttons auto-resize equally */
-          
-}
-  .scroll-to-top {
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-}
-
-/* Small phones (≤ 480px) */
-@media (max-width: 480px) {
-  .skills-grid {
-    grid-template-columns: repeat(2, 1fr); /* still 2 columns */
-  }
-  .hero {
-    grid-template-columns: 1fr 1fr; /* ✅ Still side by side, even on small screens */
-    gap: 8px;
-  }
-  .hero__art {
-    max-width: 150%;              /* ✅ Scale down image */
-    margin-bottom: 70px;
-  }
-  .hero__content h1 {
-    font-size: 22px;
-  }
-  .sub {
-    font-size: 14px;
-  }
-  .nav a {
-    font-size: 14px;
-    padding: 6px 0;
-  }
-  .btn {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-     .cta-row a {
-    flex: none;
-    
-  }
-    
-}
-
-
-
-
-
-
-
-`;
