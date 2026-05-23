@@ -6,9 +6,7 @@ import {
   Sparkles,
   Environment,
   OrbitControls,
-  ContactShadows,
-  RoundedBox,
-  Box
+  ContactShadows
 } from '@react-three/drei';
 
 /* ───────────────────────────────────────────────
@@ -27,38 +25,43 @@ function StylizedLaptop(props) {
   return (
     <group ref={group} {...props}>
       {/* Laptop Base */}
-      <RoundedBox args={[3.2, 0.15, 2.4]} radius={0.05} smoothness={4} position={[0, -0.075, 0]}>
+      <mesh position={[0, -0.075, 0]}>
+        <boxGeometry args={[3.2, 0.15, 2.4]} />
         <meshStandardMaterial color="#8b5cf6" metalness={0.8} roughness={0.2} />
-      </RoundedBox>
+      </mesh>
       
       {/* Keyboard Bed */}
-      <Box args={[2.8, 0.02, 1.2]} position={[0, 0.01, 0.3]}>
+      <mesh position={[0, 0.01, 0.3]}>
+        <boxGeometry args={[2.8, 0.02, 1.2]} />
         <meshStandardMaterial color="#111" metalness={0.8} roughness={0.8} />
-      </Box>
+      </mesh>
 
       {/* Trackpad */}
-      <Box args={[0.8, 0.02, 0.5]} position={[0, 0.01, 1.3]}>
+      <mesh position={[0, 0.01, 1.3]}>
+        <boxGeometry args={[0.8, 0.02, 0.5]} />
         <meshStandardMaterial color="#222" metalness={0.5} roughness={0.5} />
-      </Box>
+      </mesh>
       
       {/* Screen Assembly (hinged at the back) */}
       <group position={[0, 0, -1.1]}>
         {/* Tilt the screen back slightly */}
         <group rotation={[Math.PI * -0.15, 0, 0]} position={[0, 1.0, 0]}>
           {/* Lid */}
-          <RoundedBox args={[3.2, 2.2, 0.1]} radius={0.05} smoothness={4}>
+          <mesh>
+            <boxGeometry args={[3.2, 2.2, 0.1]} />
             <meshStandardMaterial color="#6366f1" metalness={0.8} roughness={0.2} />
-          </RoundedBox>
+          </mesh>
           
           {/* Glowing Display */}
-          <Box args={[3.0, 2.0, 0.02]} position={[0, 0, 0.06]}>
+          <mesh position={[0, 0, 0.06]}>
+            <boxGeometry args={[3.0, 2.0, 0.02]} />
             <meshStandardMaterial 
               color="#22d3ee" 
               emissive="#22d3ee" 
               emissiveIntensity={1.5} 
               toneMapped={false}
             />
-          </Box>
+          </mesh>
         </group>
       </group>
     </group>
@@ -91,14 +94,15 @@ function DataCubes() {
     <group ref={group}>
       {cubes.map((cube, i) => (
         <Float key={i} speed={2} rotationIntensity={1} floatIntensity={2}>
-          <Box position={cube.pos} scale={cube.scale}>
+          <mesh position={cube.pos} scale={cube.scale}>
+            <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial 
               color={cube.color} 
               emissive={cube.color} 
               emissiveIntensity={0.5} 
               wireframe 
             />
-          </Box>
+          </mesh>
         </Float>
       ))}
     </group>
